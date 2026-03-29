@@ -1,0 +1,38 @@
+# Git Ignore pro AurealisRemote projekt
+
+# Vývojové soubory a skripty
+*.sh
+*.bat
+*.py
+*.js
+test/
+scripts/
+
+# Původní vývojové HTML soubory
+WLED_remote_Karel.html
+WLED_remote_Karel_simple.html
+
+# WLED konfigurační soubory (obsahují hesla/ citlivá data)
+*.json
+!presets-example.json
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Node.js (pokud budete instalovat závislosti)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

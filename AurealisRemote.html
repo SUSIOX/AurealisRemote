@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WLED Remote Simple</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: black;
+            font-family: Arial, Helvetica, sans-serif;
+            color: white;
+            flex-direction: column;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .buttonContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .button {
+            width: 260px;
+            min-height: 44px;
+            text-align: center;
+            font-size: clamp(1em, 4vw, 1.2em);
+            color: #000;
+            background-color: #ffa200;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s, width 2s ease;
+            box-shadow: 0 4px 6px rgba(218, 218, 218, 0.3);
+            text-transform: uppercase;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .button:hover {
+            background-color: #ff8c00;
+            box-shadow: 0 9px 12px rgba(162, 244, 255, 0.504);
+        }
+
+        .button:active {
+            background-color: #ff7300;
+            transform: scale(0.98);
+            box-shadow: 0 2px 4px rgba(218, 218, 218, 0.5);
+        }
+
+        .button-row {
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+            width: 260px;
+        }
+
+        .button.half {
+            width: 127.5px;
+            padding: 15px 10px;
+        }
+
+        .button.action {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        .button.action:hover {
+            background-color: #004494;
+        }
+
+        /* Barevné linky na levé straně tlačítek */
+        .button {
+            position: relative;
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 1px;
+            bottom: 1px;
+            width: 10px;
+            border-radius: 8px 0 0 8px;
+        }
+
+        #tma::before { background-color: #333; }
+        #oran::before { background-color: #ff8c00; }
+        #slunce::before { background-color: #fff5a0; }
+        #cervena::before { background-color: #ff0000; }
+        #zelena::before { background-color: #00ff00; }
+        #modra::before { background-color: #0000ff; }
+        #amber::before { background-color: #ffbf00; }
+        #rndcol::before { background: linear-gradient(to bottom, #ff0000, #ffff00, #00ff00, #0000ff); }
+        #rainbow::before { background: linear-gradient(to bottom, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3); }
+        #prev::before, #next::before { background-color: #00aaff; }
+        #power::before, #prev::before, #next::before { display: none; }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        label {
+            font-size: 1em;
+        }
+
+        input[type="range"] {
+            width: 260px;
+            height: 44px;
+            border-radius: 5px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #664c1f;
+            outline: none;
+            transition: background 0.3s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 44px;
+            height: 44px;
+            background: #ffa639;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]:hover {
+            background: #b26200;
+        }
+
+        .button.active {
+            background-color: #ff4d00;
+            color: rgb(227 234 112);
+            font-weight: bold;
+            animation: breathe 5s infinite alternate;
+        }
+
+        .button.active::before {
+            width: 30px;
+            transition: width 2s ease;
+        }
+
+        @keyframes breathe {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 9px 12px rgba(162, 244, 255, 0.504);
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+                box-shadow: 0 9px 12px rgba(242, 244, 245, 0.504);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="buttonContainer">
+            <button class="button action" id="power" onclick="sendCmd('T=2')">⏻</button>
+            <button class="button" id="tma" onclick="sendCmd('PL=1')">TMA</button>
+            <button class="button" id="oran" onclick="sendCmd('PL=5')">Oranžová</button>
+            <button class="button" id="slunce" onclick="sendCmd('PL=4')">Slunce</button>
+            <button class="button" id="cervena" onclick="sendCmd('PL=101')">Červená</button>
+            <button class="button" id="zelena" onclick="sendCmd('PL=102')">Zelená</button>
+            <button class="button" id="modra" onclick="sendCmd('PL=103')">Modrá</button>
+            <button class="button" id="amber" onclick="sendCmd('PL=104')">Amber</button>
+            <button class="button" id="rndcol" onclick="sendCmd('PL=107')">Barvení</button>
+            <button class="button" id="rainbow" onclick="sendCmd('PL=108')">Duha</button>
+            <div class="button-row">
+                <button class="button action half" id="prev" onclick="sendCmd('PL=~-')"><<<</button>
+                <button class="button action half" id="next" onclick="sendCmd('PL=~')">>>></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="slider-container">
+        <label for="brightnessSlider">Jas: <span id="briVal">128</span></label>
+        <input type="range" id="brightnessSlider" min="0" max="255" value="128">
+    </div>
+
+    <div class="slider-container"></div>
+    <div class="slider-container"></div>
+
+    <div class="slider-container">
+        <label for="speedSlider">Rychlost: <span id="spdVal">128</span></label>
+        <input type="range" id="speedSlider" min="0" max="255" value="128">
+    </div>
+
+    <script>
+        const wledIp = '4.3.2.1';
+        let lastActiveButton = null;
+
+        function sendCmd(cmd) {
+            const url = `http://${wledIp}/win&${cmd}`;
+            new Image().src = url;
+            console.log('Odesláno:', url);
+        }
+
+        function activateButton(id) {
+            if (lastActiveButton) {
+                lastActiveButton.classList.remove('active');
+            }
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.classList.add('active');
+                lastActiveButton = btn;
+            }
+        }
+
+        // Tlačítka s aktivací
+        const btnMap = {
+            'tma': 'PL=1',
+            'oran': 'PL=5',
+            'slunce': 'PL=4',
+            'cervena': 'PL=101',
+            'zelena': 'PL=102',
+            'modra': 'PL=103',
+            'amber': 'PL=104',
+            'rndcol': 'PL=107',
+            'rainbow': 'PL=108'
+        };
+
+        Object.keys(btnMap).forEach(id => {
+            const btn = document.getElementById(id);
+            btn.onclick = function() {
+                sendCmd(btnMap[id]);
+                activateButton(id);
+            };
+        });
+
+        // Power bez aktivace
+        document.getElementById('power').onclick = function() {
+            sendCmd('T=2');
+        };
+
+        // Prev/Next - procházení tlačítek na stránce
+        const buttonOrder = ['tma', 'oran', 'slunce', 'cervena', 'zelena', 'modra', 'amber', 'rndcol', 'rainbow'];
+        let currentButtonIndex = -1;
+
+        function goToButton(index) {
+            // Wrap around
+            if (index < 0) index = buttonOrder.length - 1;
+            if (index >= buttonOrder.length) index = 0;
+            
+            currentButtonIndex = index;
+            const btnId = buttonOrder[index];
+            const cmd = btnMap[btnId];
+            
+            sendCmd(cmd);
+            activateButton(btnId);
+        }
+
+        document.getElementById('prev').onclick = function() {
+            goToButton(currentButtonIndex - 1);
+        };
+        document.getElementById('next').onclick = function() {
+            goToButton(currentButtonIndex + 1);
+        };
+
+        // Slider jasu - s throttlingem pro mobil
+        const briSlider = document.getElementById('brightnessSlider');
+        const briVal = document.getElementById('briVal');
+        let briTimeout = null;
+
+        briSlider.addEventListener('input', () => {
+            const val = briSlider.value;
+            briVal.textContent = val;
+            if (briTimeout) clearTimeout(briTimeout);
+            briTimeout = setTimeout(() => {
+                sendCmd(`A=${val}`);
+            }, 100);
+        });
+
+        briSlider.addEventListener('change', () => {
+            const val = briSlider.value;
+            sendCmd(`A=${val}`);
+        });
+
+        // Slider rychlosti - s throttlingem (odesílá se až po uvolnění)
+        const spdSlider = document.getElementById('speedSlider');
+        const spdVal = document.getElementById('spdVal');
+        let speedTimeout = null;
+
+        spdSlider.addEventListener('input', () => {
+            const val = spdSlider.value;
+            spdVal.textContent = val;
+            if (speedTimeout) clearTimeout(speedTimeout);
+            speedTimeout = setTimeout(() => {
+                sendCmd(`SX=${val}`);
+            }, 300);
+        });
+
+        spdSlider.addEventListener('change', () => {
+            const val = spdSlider.value;
+            sendCmd(`SX=${val}`);
+        });
+    </script>
+</body>
+</html>
