@@ -320,26 +320,6 @@
             const val = spdSlider.value;
             sendCmd(`SX=${val}`);
         });
-
-        // Inline Service Worker pro offline PWA
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                const CACHE_NAME = 'aurealis-v1';
-                const urlsToCache = [self.location.pathname];
-                
-                self.addEventListener('install', (e) => {
-                    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache)));
-                    self.skipWaiting();
-                });
-                
-                self.addEventListener('fetch', (e) => {
-                    e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-                });
-            `;
-            const blob = new Blob([swCode], { type: 'application/javascript' });
-            const swUrl = URL.createObjectURL(blob);
-            navigator.serviceWorker.register(swUrl);
-        }
     </script>
 </body>
 </html>
