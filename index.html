@@ -212,15 +212,40 @@
         <input type="range" id="speedSlider" min="0" max="255" value="128">
     </div>
 
+    <div id="debug" style="margin-top:20px;padding:10px;background:#333;color:#0f0;font-family:monospace;font-size:12px;max-width:260px;word-break:break-all;"></div>
+
     <script>
         const wledIp = '4.3.2.1';
         let lastActiveButton = null;
+        const debug = document.getElementById('debug');
+
+        function log(msg) {
+            console.log(msg);
+            debug.innerHTML += msg + '<br>';
+        }
 
         function sendCmd(cmd) {
             const url = `http://${wledIp}/win&${cmd}`;
-            new Image().src = url;
-            console.log('Odesláno:', url);
+            log('Odesílám: ' + url);
+            
+            // Zkusit fetch s no-cors
+            fetch(url, { mode: 'no-cors', method: 'GET' })
+                .then(() => log('OK: ' + cmd))
+                .catch(e => {
+                    log('Fetch err: ' + e.message);
+                    // Fallback: Image hack
+                    const img = new Image();
+                    img.onload = () => log('IMG OK: ' + cmd);
+                    img.onerror = () => log('IMG err (normal): ' + cmd);
+                    img.src = url;
+                });
         }
+
+        // Test připojení při startu
+        log('Test WLED...');
+        fetch(`http://${wledIp}/json`, { mode: 'no-cors' })
+            .then(() => log('WLED online'))
+            .catch(e => log('WLED offline? ' + e.message));
 
         function activateButton(id) {
             if (lastActiveButton) {
