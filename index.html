@@ -228,24 +228,35 @@
             const url = `http://${wledIp}/win&${cmd}`;
             log('Odesílám: ' + url);
             
-            // Zkusit fetch s no-cors
-            fetch(url, { mode: 'no-cors', method: 'GET' })
-                .then(() => log('OK: ' + cmd))
-                .catch(e => {
-                    log('Fetch err: ' + e.message);
-                    // Fallback: Image hack
-                    const img = new Image();
-                    img.onload = () => log('IMG OK: ' + cmd);
-                    img.onerror = () => log('IMG err (normal): ' + cmd);
-                    img.src = url;
-                });
+            // iframe hack pro CORS bypass
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            log('iframe odeslán: ' + cmd);
+            
+            // cleanup po 500ms
+            setTimeout(() => {
+                if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+            }, 500);
         }
 
         // Test připojení při startu
         log('Test WLED...');
-        fetch(`http://${wledIp}/json`, { mode: 'no-cors' })
-            .then(() => log('WLED online'))
-            .catch(e => log('WLED offline? ' + e.message));
+        setTimeout(() => {
+            const testFrame = document.createElement('iframe');
+            testFrame.style.display = 'none';
+            testFrame.src = `http://${wledIp}/json`;
+            testFrame.onload = () => {
+                log('WLED online (iframe)');
+                document.body.removeChild(testFrame);
+            };
+            testFrame.onerror = () => {
+                log('WLED iframe error');
+                document.body.removeChild(testFrame);
+            };
+            document.body.appendChild(testFrame);
+        }, 100);
 
         function activateButton(id) {
             if (lastActiveButton) {
