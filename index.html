@@ -218,8 +218,8 @@
         let lastActiveButton = null;
 
         function sendCmd(cmd) {
-            const url = `http://${wledIp}/win&${cmd}`;
-            // Jednoducha metoda pro same-origin
+            // Relativni URL pro same-origin hosting na WLED
+            const url = '/win&' + cmd;
             const img = new Image();
             img.src = url;
         }
