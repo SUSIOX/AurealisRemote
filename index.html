@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIkF1cmVhbGlzIFJlbW90ZSIsICJzaG9ydF9uYW1lIjogIkF1cmVhbGlzIiwgInN0YXJ0X3VybCI6ICIuLyIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMDAwMDAwIiwgInRoZW1lX2NvbG9yIjogIiMwMDAwMDAiLCAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLCAiaWNvbnMiOiBbXX0=">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Aurealis">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>WLED Remote Simple</title>
     <style>
         body {
@@ -314,6 +320,26 @@
             const val = spdSlider.value;
             sendCmd(`SX=${val}`);
         });
+
+        // Inline Service Worker pro offline PWA
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'aurealis-v1';
+                const urlsToCache = [self.location.pathname];
+                
+                self.addEventListener('install', (e) => {
+                    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache)));
+                    self.skipWaiting();
+                });
+                
+                self.addEventListener('fetch', (e) => {
+                    e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+                });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(swUrl);
+        }
     </script>
 </body>
 </html>

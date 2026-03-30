@@ -1,3 +1,7 @@
+# PWA files - allow these
+!manifest.json
+!sw.js
+
 # Git Ignore pro AurealisRemote projekt
 
 # Vývojové soubory a skripty
